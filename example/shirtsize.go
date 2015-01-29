@@ -2,7 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-package testdata
+package main
+
+import (
+	"encoding/json"
+	"log"
+	"os"
+)
 
 //go:generate jsonenums -type=ShirtSize
 type ShirtSize byte
@@ -28,3 +34,13 @@ const (
 	Saturday
 	Sunday
 )
+
+func main() {
+	v := struct {
+		Size ShirtSize
+		Day  WeekDay
+	}{M, Friday}
+	if err := json.NewEncoder(os.Stdout).Encode(v); err != nil {
+		log.Fatal(err)
+	}
+}
