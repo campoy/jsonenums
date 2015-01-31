@@ -7,37 +7,23 @@ import (
 	"fmt"
 )
 
-func (r WeekDay) String() string {
-	switch r {
-
-	case Monday:
-		return "Monday"
-
-	case Tuesday:
-		return "Tuesday"
-
-	case Wednesday:
-		return "Wednesday"
-
-	case Thursday:
-		return "Thursday"
-
-	case Friday:
-		return "Friday"
-
-	case Saturday:
-		return "Saturday"
-
-	case Sunday:
-		return "Sunday"
-
-	default:
-		return "unknown WeekDay"
-	}
+var _WeekDayValueToName = map[WeekDay]string{
+	Monday: "Monday", Tuesday: "Tuesday", Wednesday: "Wednesday", Thursday: "Thursday", Friday: "Friday", Saturday: "Saturday", Sunday: "Sunday",
 }
 
 func (r WeekDay) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.String())
+	if s, ok := r.(fmt.Stringer); ok {
+		return json.Marshal(s.String())
+	}
+	s, ok := _WeekDayValueToName[r]
+	if !ok {
+		return nil, fmt.Errorf("invalid WeekDay: %d", r)
+	}
+	return json.Marshal(s)
+}
+
+var _WeekDayNameToValue = map[string]WeekDay{
+	"Monday": Monday, "Tuesday": Tuesday, "Wednesday": Wednesday, "Thursday": Thursday, "Friday": Friday, "Saturday": Saturday, "Sunday": Sunday,
 }
 
 func (r *WeekDay) UnmarshalJSON(data []byte) error {
@@ -45,31 +31,10 @@ func (r *WeekDay) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("WeekDay should be a string, got %s", data)
 	}
-	switch s {
-
-	case "Monday":
-		*r = Monday
-
-	case "Tuesday":
-		*r = Tuesday
-
-	case "Wednesday":
-		*r = Wednesday
-
-	case "Thursday":
-		*r = Thursday
-
-	case "Friday":
-		*r = Friday
-
-	case "Saturday":
-		*r = Saturday
-
-	case "Sunday":
-		*r = Sunday
-
-	default:
+	v, ok := _WeekDayNameToValue[s]
+	if !ok {
 		return fmt.Errorf("invalid WeekDay %q", s)
 	}
+	*r = v
 	return nil
 }

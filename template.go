@@ -19,19 +19,23 @@ import (
 )
 
 {{range $typename, $values := .TypesAndValues}}
-func (r {{$typename}}) String() string {
-    switch r {
-    {{range $values}}
-    case {{.}}:
-        return "{{.}}"
-    {{end}}
-    default:
-        return "unknown {{$typename}}"
-    }
+var _{{$typename}}ValueToName = map[{{$typename}}]string {
+    {{range $values}}{{.}}: "{{.}}",{{end}}
 }
 
 func (r {{$typename}}) MarshalJSON() ([]byte, error) {
-    return json.Marshal(r.String())
+    if s, ok := r.(fmt.Stringer); ok {
+        return json.Marshal(s.String())
+    }
+    s, ok := _{{$typename}}ValueToName[r]
+    if !ok {
+        return nil, fmt.Errorf("invalid {{$typename}}: %d", r)
+    }
+    return json.Marshal(s)
+}
+
+var _{{$typename}}NameToValue = map[string]{{$typename}} {
+    {{range $values}}"{{.}}": {{.}},{{end}}
 }
 
 func (r *{{$typename}}) UnmarshalJSON(data []byte) error {
@@ -39,14 +43,11 @@ func (r *{{$typename}}) UnmarshalJSON(data []byte) error {
     if err := json.Unmarshal(data, &s); err != nil {
         return fmt.Errorf("{{$typename}} should be a string, got %s", data)
     }
-    switch s {
-    {{range $values}}
-    case "{{.}}":
-        *r = {{.}}
-    {{end}}
-    default:
+    v, ok := _{{$typename}}NameToValue[s]
+    if !ok {
         return fmt.Errorf("invalid {{$typename}} %q", s)
     }
+    *r = v
     return nil
 }
 

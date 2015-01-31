@@ -7,34 +7,23 @@ import (
 	"fmt"
 )
 
-func (r ShirtSize) String() string {
-	switch r {
-
-	case NA:
-		return "NA"
-
-	case XS:
-		return "XS"
-
-	case S:
-		return "S"
-
-	case M:
-		return "M"
-
-	case L:
-		return "L"
-
-	case XL:
-		return "XL"
-
-	default:
-		return "unknown ShirtSize"
-	}
+var _ShirtSizeValueToName = map[ShirtSize]string{
+	NA: "NA", XS: "XS", S: "S", M: "M", L: "L", XL: "XL",
 }
 
 func (r ShirtSize) MarshalJSON() ([]byte, error) {
-	return json.Marshal(r.String())
+	if s, ok := r.(fmt.Stringer); ok {
+		return json.Marshal(s.String())
+	}
+	s, ok := _ShirtSizeValueToName[r]
+	if !ok {
+		return nil, fmt.Errorf("invalid ShirtSize: %d", r)
+	}
+	return json.Marshal(s)
+}
+
+var _ShirtSizeNameToValue = map[string]ShirtSize{
+	"NA": NA, "XS": XS, "S": S, "M": M, "L": L, "XL": XL,
 }
 
 func (r *ShirtSize) UnmarshalJSON(data []byte) error {
@@ -42,28 +31,10 @@ func (r *ShirtSize) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("ShirtSize should be a string, got %s", data)
 	}
-	switch s {
-
-	case "NA":
-		*r = NA
-
-	case "XS":
-		*r = XS
-
-	case "S":
-		*r = S
-
-	case "M":
-		*r = M
-
-	case "L":
-		*r = L
-
-	case "XL":
-		*r = XL
-
-	default:
+	v, ok := _ShirtSizeNameToValue[s]
+	if !ok {
 		return fmt.Errorf("invalid ShirtSize %q", s)
 	}
+	*r = v
 	return nil
 }
