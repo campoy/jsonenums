@@ -1,6 +1,6 @@
 # jsonenums
 
-JSONenums is a tool to automate the creation of methods that satisfy the
+jsonenums is a tool to automate the creation of methods that satisfy the
 `fmt.Stringer`, `json.Marshaler` and `json.Unmarshaler` interfaces.
 Given the name of a (signed or unsigned) integer type T that has constants
 defined, stringer will create a new self-contained Go source file implementing
@@ -14,7 +14,7 @@ defined, stringer will create a new self-contained Go source file implementing
 The file is created in the same package and directory as the package that
 defines T. It has helpful defaults designed for use with go generate.
 
-JSONenums is a simple implementation of a concept and the code might not be the
+jsonenums is a simple implementation of a concept and the code might not be the
 most performant or beautiful to read.
 
 For example, given this snippet,
