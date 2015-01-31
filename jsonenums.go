@@ -154,8 +154,7 @@ type Package struct {
 	name  string
 	files []*ast.File
 
-	defs  map[*ast.Ident]types.Object
-	types *types.Package
+	defs map[*ast.Ident]types.Object
 }
 
 // parsePackage parses the package in the given directory and returns it.
@@ -188,8 +187,7 @@ func parsePackage(directory string, skipSuffix string) (*Package, error) {
 	defs := make(map[*ast.Ident]types.Object)
 	config := types.Config{FakeImportC: true}
 	info := &types.Info{Defs: defs}
-	types, err := config.Check(directory, fs, files, info)
-	if err != nil {
+	if _, err := config.Check(directory, fs, files, info); err != nil {
 		return nil, fmt.Errorf("type-checking package: %v", err)
 	}
 
@@ -197,7 +195,6 @@ func parsePackage(directory string, skipSuffix string) (*Package, error) {
 		name:  files[0].Name.Name,
 		files: files,
 		defs:  defs,
-		types: types,
 	}, nil
 }
 

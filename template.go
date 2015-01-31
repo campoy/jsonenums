@@ -19,15 +19,14 @@ import (
 )
 
 {{range $typename, $values := .TypesAndValues}}
-var _{{$typename}}ValueToName = map[{{$typename}}]string {
-    {{range $values}}{{.}}: "{{.}}",{{end}}
-}
 
 func (r {{$typename}}) MarshalJSON() ([]byte, error) {
-    if s, ok := r.(fmt.Stringer); ok {
+    if s, ok := interface{}(r).(fmt.Stringer); ok {
         return json.Marshal(s.String())
     }
-    s, ok := _{{$typename}}ValueToName[r]
+    s, ok := map[{{$typename}}]string {
+        {{range $values}}{{.}}: "{{.}}",{{end}}
+    }[r]
     if !ok {
         return nil, fmt.Errorf("invalid {{$typename}}: %d", r)
     }
@@ -36,6 +35,15 @@ func (r {{$typename}}) MarshalJSON() ([]byte, error) {
 
 var _{{$typename}}NameToValue = map[string]{{$typename}} {
     {{range $values}}"{{.}}": {{.}},{{end}}
+}
+
+func init() {
+    var v {{$typename}}
+    if _, ok := interface{}(v).(fmt.Stringer); ok {
+        _{{$typename}}NameToValue = map[string]{{$typename}} {
+            {{range $values}}interface{}({{.}}).(fmt.Stringer).String(): {{.}},{{end}}
+        }
+    }
 }
 
 func (r *{{$typename}}) UnmarshalJSON(data []byte) error {
