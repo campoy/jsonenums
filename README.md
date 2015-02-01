@@ -48,7 +48,7 @@ in the same directory will create the file `pill_jsonenums.go`, in package
 
 `MarshalJSON` will translate the value of a `Pill` constant to the `[]byte`
 representation of the respective constant name, so that the call
-`json.Marshal(painkiller.Aspirin) will return the bytes `[]byte("\"Aspirin\"")`.
+`json.Marshal(painkiller.Aspirin)` will return the bytes `[]byte("\"Aspirin\"")`.
 
 `UnmarshalJSON` performs the opposite operation; given the `[]byte`
 representation of a `Pill` constant it will change the receiver to equal the
