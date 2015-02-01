@@ -1,12 +1,11 @@
 # jsonenums
 
 jsonenums is a tool to automate the creation of methods that satisfy the
-`fmt.Stringer`, `json.Marshaler` and `json.Unmarshaler` interfaces.
+`json.Marshaler` and `json.Unmarshaler` interfaces.
 Given the name of a (signed or unsigned) integer type T that has constants
-defined, stringer will create a new self-contained Go source file implementing
+defined, jsonenums will create a new self-contained Go source file implementing
 
 ```
-    func (t T) String() string
     func (t T) MarshalJSON() ([]byte, error)
     func (t *T) UnmarshalJSON([]byte) error
 ```
@@ -43,19 +42,23 @@ in the same directory will create the file `pill_jsonenums.go`, in package
 `painkiller`, containing a definition of
 
 ```
-    func (r Pill) String() string
     func (r Pill) MarshalJSON() ([]byte, error)
     func (r *Pill) UnmarshalJSON([]byte) error
 ```
 
-That method will translate the value of a Pill constant to the string
+`MarshalJSON` will translate the value of a `Pill` constant to the `[]byte`
 representation of the respective constant name, so that the call
-`fmt.Print(painkiller.Aspirin) will print the string "Aspirin".
+`json.Marshal(painkiller.Aspirin) will return the bytes `[]byte("\"Aspirin\"")`.
+
+`UnmarshalJSON` performs the opposite operation; given the `[]byte`
+representation of a `Pill` constant it will change the receiver to equal the
+corresponding constant. So given `[]byte("\"Aspirin\"")` the receiver will
+change to `Aspirin` and the returned error will be `nil`.
 
 Typically this process would be run using go generate, like this:
 
 ```
-    //go:generate stringer -type=Pill
+    //go:generate jsonenums -type=Pill
 ```
 
 If multiple constants have the same value, the lexically first matching name
@@ -66,6 +69,6 @@ the arguments must name a single directory holding a Go package or a set of Go
 source files that represent a single Go package.
 
 The `-type` flag accepts a comma-separated list of types so a single run can
-generate methods for multiple types. The default output file is t_string.go,
+generate methods for multiple types. The default output file is t_jsonenums.go,
 where t is the lower-cased name of the first type listed. THe suffix can be
 overridden with the `-suffix` flag.
