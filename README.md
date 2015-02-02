@@ -6,8 +6,8 @@ Given the name of a (signed or unsigned) integer type T that has constants
 defined, jsonenums will create a new self-contained Go source file implementing
 
 ```
-    func (t T) MarshalJSON() ([]byte, error)
-    func (t *T) UnmarshalJSON([]byte) error
+func (t T) MarshalJSON() ([]byte, error)
+func (t *T) UnmarshalJSON([]byte) error
 ```
 
 The file is created in the same package and directory as the package that
@@ -18,32 +18,32 @@ most performant or beautiful to read.
 
 For example, given this snippet,
 
-```
-    package painkiller
+```Go
+package painkiller
 
-    type Pill int
+type Pill int
 
-    const (
-        Placebo Pill = iota
-        Aspirin
-        Ibuprofen
-        Paracetamol
-        Acetaminophen = Paracetamol
-    )
+const (
+	Placebo Pill = iota
+	Aspirin
+	Ibuprofen
+	Paracetamol
+	Acetaminophen = Paracetamol
+)
 ```
 
 running this command
 
 ```
-    jsonenums -type=Pill
+jsonenums -type=Pill
 ```
 
 in the same directory will create the file `pill_jsonenums.go`, in package
 `painkiller`, containing a definition of
 
 ```
-    func (r Pill) MarshalJSON() ([]byte, error)
-    func (r *Pill) UnmarshalJSON([]byte) error
+func (r Pill) MarshalJSON() ([]byte, error)
+func (r *Pill) UnmarshalJSON([]byte) error
 ```
 
 `MarshalJSON` will translate the value of a `Pill` constant to the `[]byte`
@@ -58,7 +58,7 @@ change to `Aspirin` and the returned error will be `nil`.
 Typically this process would be run using go generate, like this:
 
 ```
-    //go:generate jsonenums -type=Pill
+//go:generate jsonenums -type=Pill
 ```
 
 If multiple constants have the same value, the lexically first matching name
