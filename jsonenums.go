@@ -67,22 +67,14 @@ package main
 import (
 	"bytes"
 	"flag"
-	"fmt"
-	"go/ast"
-	"go/build"
 	"go/format"
-	"go/parser"
-	"go/token"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 
-	"golang.org/x/tools/go/exact"
-	"golang.org/x/tools/go/types"
-
-	_ "golang.org/x/tools/go/gcimporter"
+	"github.com/campoy/jsonenums/parser"
 )
 
 var (
@@ -105,7 +97,7 @@ func main() {
 		log.Fatalf("only one directory at a time")
 	}
 
-	pkg, err := parsePackage(dir, *outputSuffix+".go")
+	pkg, err := parser.ParsePackage(dir, *outputSuffix+".go")
 	if err != nil {
 		log.Fatalf("parsing package: %v", err)
 	}
@@ -116,13 +108,13 @@ func main() {
 		TypesAndValues map[string][]string
 	}{
 		Command:        strings.Join(os.Args[1:], " "),
-		PackageName:    pkg.name,
+		PackageName:    pkg.Name,
 		TypesAndValues: make(map[string][]string),
 	}
 
 	// Run generate for each type.
 	for _, typeName := range types {
-		values, err := pkg.valuesOfType(typeName)
+		values, err := pkg.ValuesOfType(typeName)
 		if err != nil {
 			log.Fatalf("finding values for type %v: %v", typeName, err)
 		}
@@ -148,139 +140,4 @@ func main() {
 			log.Fatalf("writing output: %s", err)
 		}
 	}
-}
-
-type Package struct {
-	name  string
-	files []*ast.File
-
-	defs map[*ast.Ident]types.Object
-}
-
-// parsePackage parses the package in the given directory and returns it.
-func parsePackage(directory string, skipSuffix string) (*Package, error) {
-	pkgDir, err := build.Default.ImportDir(directory, 0)
-	if err != nil {
-		return nil, fmt.Errorf("cannot process directory %s: %s", directory, err)
-	}
-
-	var files []*ast.File
-	fs := token.NewFileSet()
-	for _, name := range pkgDir.GoFiles {
-		if !strings.HasSuffix(name, ".go") || strings.HasSuffix(name, skipSuffix) {
-			continue
-		}
-		if directory != "." {
-			name = filepath.Join(directory, name)
-		}
-		f, err := parser.ParseFile(fs, name, nil, 0)
-		if err != nil {
-			return nil, fmt.Errorf("parsing file %v: %v", name, err)
-		}
-		files = append(files, f)
-	}
-	if len(files) == 0 {
-		return nil, fmt.Errorf("%s: no buildable Go files", directory)
-	}
-
-	// type-check the package
-	defs := make(map[*ast.Ident]types.Object)
-	config := types.Config{FakeImportC: true}
-	info := &types.Info{Defs: defs}
-	if _, err := config.Check(directory, fs, files, info); err != nil {
-		return nil, fmt.Errorf("type-checking package: %v", err)
-	}
-
-	return &Package{
-		name:  files[0].Name.Name,
-		files: files,
-		defs:  defs,
-	}, nil
-}
-
-// generate produces the String method for the named type.
-func (pkg *Package) valuesOfType(typeName string) ([]string, error) {
-	var values, inspectErrs []string
-	for _, file := range pkg.files {
-		ast.Inspect(file, func(node ast.Node) bool {
-			decl, ok := node.(*ast.GenDecl)
-			if !ok || decl.Tok != token.CONST {
-				// We only care about const declarations.
-				return true
-			}
-
-			if vs, err := pkg.valuesOfTypeIn(typeName, decl); err != nil {
-				inspectErrs = append(inspectErrs, err.Error())
-			} else {
-				values = append(values, vs...)
-			}
-			return false
-		})
-	}
-	if len(inspectErrs) > 0 {
-		return nil, fmt.Errorf("inspecting code:\n\t%v", strings.Join(inspectErrs, "\n\t"))
-	}
-	if len(values) == 0 {
-		return nil, fmt.Errorf("no values defined for type %s", typeName)
-	}
-	return values, nil
-}
-
-func (pkg *Package) valuesOfTypeIn(typeName string, decl *ast.GenDecl) ([]string, error) {
-	var values []string
-
-	// The name of the type of the constants we are declaring.
-	// Can change if this is a multi-element declaration.
-	typ := ""
-	// Loop over the elements of the declaration. Each element is a ValueSpec:
-	// a list of names possibly followed by a type, possibly followed by values.
-	// If the type and value are both missing, we carry down the type (and value,
-	// but the "go/types" package takes care of that).
-	for _, spec := range decl.Specs {
-		vspec := spec.(*ast.ValueSpec) // Guaranteed to succeed as this is CONST.
-		if vspec.Type == nil && len(vspec.Values) > 0 {
-			// "X = 1". With no type but a value, the constant is untyped.
-			// Skip this vspec and reset the remembered type.
-			typ = ""
-			continue
-		}
-		if vspec.Type != nil {
-			// "X T". We have a type. Remember it.
-			ident, ok := vspec.Type.(*ast.Ident)
-			if !ok {
-				continue
-			}
-			typ = ident.Name
-		}
-		if typ != typeName {
-			// This is not the type we're looking for.
-			continue
-		}
-
-		// We now have a list of names (from one line of source code) all being
-		// declared with the desired type.
-		// Grab their names and actual values and store them in f.values.
-		for _, name := range vspec.Names {
-			if name.Name == "_" {
-				continue
-			}
-			// This dance lets the type checker find the values for us. It's a
-			// bit tricky: look up the object declared by the name, find its
-			// types.Const, and extract its value.
-			obj, ok := pkg.defs[name]
-			if !ok {
-				return nil, fmt.Errorf("no value for constant %s", name)
-			}
-			info := obj.Type().Underlying().(*types.Basic).Info()
-			if info&types.IsInteger == 0 {
-				return nil, fmt.Errorf("can't handle non-integer constant type %s", typ)
-			}
-			value := obj.(*types.Const).Val() // Guaranteed to succeed as this is CONST.
-			if value.Kind() != exact.Int {
-				log.Fatalf("can't happen: constant is not an integer %s", name)
-			}
-			values = append(values, name.Name)
-		}
-	}
-	return values, nil
 }
