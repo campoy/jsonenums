@@ -7,30 +7,49 @@ import (
 	"fmt"
 )
 
-func (r ShirtSize) MarshalJSON() ([]byte, error) {
-	if s, ok := interface{}(r).(fmt.Stringer); ok {
-		return json.Marshal(s.String())
+var (
+	_ShirtSizeNameToValue = map[string]ShirtSize{
+		"NA": NA,
+		"XS": XS,
+		"S":  S,
+		"M":  M,
+		"L":  L,
+		"XL": XL,
 	}
-	s, ok := map[ShirtSize]string{
-		NA: "NA", XS: "XS", S: "S", M: "M", L: "L", XL: "XL",
-	}[r]
-	if !ok {
-		return nil, fmt.Errorf("invalid ShirtSize: %d", r)
-	}
-	return json.Marshal(s)
-}
 
-var _ShirtSizeNameToValue = map[string]ShirtSize{
-	"NA": NA, "XS": XS, "S": S, "M": M, "L": L, "XL": XL,
-}
+	_ShirtSizeValueToName = map[ShirtSize]string{
+		NA: "NA",
+		XS: "XS",
+		S:  "S",
+		M:  "M",
+		L:  "L",
+		XL: "XL",
+	}
+)
 
 func init() {
 	var v ShirtSize
 	if _, ok := interface{}(v).(fmt.Stringer); ok {
 		_ShirtSizeNameToValue = map[string]ShirtSize{
-			interface{}(NA).(fmt.Stringer).String(): NA, interface{}(XS).(fmt.Stringer).String(): XS, interface{}(S).(fmt.Stringer).String(): S, interface{}(M).(fmt.Stringer).String(): M, interface{}(L).(fmt.Stringer).String(): L, interface{}(XL).(fmt.Stringer).String(): XL,
+			interface{}(NA).(fmt.Stringer).String(): NA,
+			interface{}(XS).(fmt.Stringer).String(): XS,
+			interface{}(S).(fmt.Stringer).String():  S,
+			interface{}(M).(fmt.Stringer).String():  M,
+			interface{}(L).(fmt.Stringer).String():  L,
+			interface{}(XL).(fmt.Stringer).String(): XL,
 		}
 	}
+}
+
+func (r ShirtSize) MarshalJSON() ([]byte, error) {
+	if s, ok := interface{}(r).(fmt.Stringer); ok {
+		return json.Marshal(s.String())
+	}
+	s, ok := _ShirtSizeValueToName[r]
+	if !ok {
+		return nil, fmt.Errorf("invalid ShirtSize: %d", r)
+	}
+	return json.Marshal(s)
 }
 
 func (r *ShirtSize) UnmarshalJSON(data []byte) error {
