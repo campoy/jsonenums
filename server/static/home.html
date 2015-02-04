@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+
+<!--
+ Copyright 2014 The Go Authors. All rights reserved.
+ Use of this source code is governed by a BSD-style
+ license that can be found in the LICENSE file.
+-->
+
+<html>
+<title>jsonenums</title>
+<style>
+    textarea,
+    input {
+        display: block;
+        width: 80%;
+        margin: auto;
+    }
+    textarea {
+        height: 200px;
+        overflow-y: scroll;
+    }
+</style>
+
+<script src="https://code.jquery.com/jquery-2.1.3.min.js"></script>
+<script>
+    function generate() {
+        $.get("/generate", {
+            "code": $("#code").val(),
+            "type": $("#type").val(),
+            "template": $("#template").val(),
+        }).done(function(res) {
+            $("#result").val(res);
+            $("#result").css('background','#fff');
+        }).fail(function(res) {
+            $("#result").val(res.responseText);
+            $("#result").css('background','#fee');
+        })
+    }
+</script>
+
+<body>
+
+    <form action="/generate" method="GET">
+        <input type="text" id="type" value="WeekDay">
+        <textarea id="code">
+package test
+
+type WeekDay int
+
+const (
+    Monday WeekDay = iota
+    Tuesday
+    Wednesday
+    Thursday
+    Friday
+    Saturday
+    Sunday
+)
+        </textarea>
+        <textarea id="template">
+package {{.PackageName}}
+
+func (r {{.TypeName}}) String() string {
+    s, ok := map[{{.TypeName}}]string {
+        {{range .Values}}{{.}}:"{{.}}",{{end}}
+    }
+    if !ok {
+        return "unknown {{.TypeName}}"
+    }
+    return s
+}
+        </textarea>
+    </form>
+
+    <input type="button" onclick="generate()" value="generate code">
+
+    <textarea id="result">
+    </textarea>
+</body>
+
+</html>
