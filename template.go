@@ -42,7 +42,7 @@ func init() {
     }
 }
 
-// MarshalJSON returns *r as the JSON encoding of r.
+// MarshalJSON is generated; DO NOT EDIT
 func (r {{$typename}}) MarshalJSON() ([]byte, error) {
     if s, ok := interface{}(r).(fmt.Stringer); ok {
         return json.Marshal(s.String())
@@ -54,7 +54,7 @@ func (r {{$typename}}) MarshalJSON() ([]byte, error) {
     return json.Marshal(s)
 }
 
-// UnmarshalJSON sets *r to a copy of data.
+// UnmarshalJSON is generated; DO NOT EDIT
 func (r *{{$typename}}) UnmarshalJSON(data []byte) error {
     var s string
     if err := json.Unmarshal(data, &s); err != nil {
