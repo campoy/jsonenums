@@ -59,7 +59,7 @@
 //
 // The -type flag accepts a comma-separated list of types so a single run can
 // generate methods for multiple types. The default output file is t_string.go,
-// where t is the lower-cased name of the first type listed. THe suffix can be
+// where t is the lower-cased name of the first type listed. The suffix can be
 // overridden with the -suffix flag.
 //
 package main
