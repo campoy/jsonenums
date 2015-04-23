@@ -58,9 +58,10 @@
 // or a set of Go source files that represent a single Go package.
 //
 // The -type flag accepts a comma-separated list of types so a single run can
-// generate methods for multiple types. The default output file is t_string.go,
-// where t is the lower-cased name of the first type listed. The suffix can be
-// overridden with the -suffix flag.
+// generate methods for multiple types. The default output file is
+// t_jsonenums.go, where t is the lower-cased name of the first type listed.
+// The suffix can be overridden with the -suffix flag and a prefix may be added
+// with the -prefix flag.
 //
 package main
 
@@ -79,6 +80,7 @@ import (
 
 var (
 	typeNames    = flag.String("type", "", "comma-separated list of type names; must be set")
+	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
 	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
 )
 
@@ -97,7 +99,7 @@ func main() {
 		log.Fatalf("only one directory at a time")
 	}
 
-	pkg, err := parser.ParsePackage(dir, *outputSuffix+".go")
+	pkg, err := parser.ParsePackage(dir, *outputPrefix, *outputSuffix+".go")
 	if err != nil {
 		log.Fatalf("parsing package: %v", err)
 	}
@@ -134,7 +136,8 @@ func main() {
 			src = buf.Bytes()
 		}
 
-		output := strings.ToLower(typeName + *outputSuffix + ".go")
+		output := strings.ToLower(*outputPrefix + typeName +
+			*outputSuffix + ".go")
 		outputPath := filepath.Join(dir, output)
 		if err := ioutil.WriteFile(outputPath, src, 0644); err != nil {
 			log.Fatalf("writing output: %s", err)

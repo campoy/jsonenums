@@ -30,7 +30,7 @@ type Package struct {
 }
 
 // ParsePackage parses the package in the given directory and returns it.
-func ParsePackage(directory string, skipSuffix string) (*Package, error) {
+func ParsePackage(directory, skipPrefix, skipSuffix string) (*Package, error) {
 	pkgDir, err := build.Default.ImportDir(directory, 0)
 	if err != nil {
 		return nil, fmt.Errorf("cannot process directory %s: %s", directory, err)
@@ -40,7 +40,8 @@ func ParsePackage(directory string, skipSuffix string) (*Package, error) {
 	fs := token.NewFileSet()
 	for _, name := range pkgDir.GoFiles {
 		if !strings.HasSuffix(name, ".go") ||
-			(skipSuffix != "" && strings.HasSuffix(name, skipSuffix)) {
+			(skipSuffix != "" && strings.HasPrefix(name, skipPrefix) &&
+				strings.HasSuffix(name, skipSuffix)) {
 			continue
 		}
 		if directory != "." {
