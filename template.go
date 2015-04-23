@@ -42,7 +42,7 @@ func init() {
     }
 }
 
-// MarshalJSON is generated.
+// MarshalJSON is generated so {{$typename}} satisfies json.Marshaler.
 func (r {{$typename}}) MarshalJSON() ([]byte, error) {
     if s, ok := interface{}(r).(fmt.Stringer); ok {
         return json.Marshal(s.String())
@@ -54,7 +54,7 @@ func (r {{$typename}}) MarshalJSON() ([]byte, error) {
     return json.Marshal(s)
 }
 
-// UnmarshalJSON is generated.
+// UnmarshalJSON is generated so {{$typename}} satisfies json.Unmarshaler.
 func (r *{{$typename}}) UnmarshalJSON(data []byte) error {
     var s string
     if err := json.Unmarshal(data, &s); err != nil {
