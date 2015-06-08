@@ -70,7 +70,8 @@ source files that represent a single Go package.
 
 The `-type` flag accepts a comma-separated list of types so a single run can
 generate methods for multiple types. The default output file is t_jsonenums.go,
-where t is the lower-cased name of the first type listed. THe suffix can be
-overridden with the `-suffix` flag.
+where t is the lower-cased name of the first type listed. The suffix can be
+overridden with the `-suffix` flag and a prefix may be added with the `-prefix` 
+flag.
 
 This is not an official Google product (experimental or otherwise), it is just code that happens to be owned by Google.
