@@ -75,7 +75,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/campoy/jsonenums/parser"
+	"github.com/thought-machine/jsonenums/parser"
 )
 
 var (
