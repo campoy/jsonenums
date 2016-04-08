@@ -17,7 +17,7 @@ import (
 	"strings"
 
 	"go/constant"
-	"go/importer"
+	_ "go/importer"
 	"go/types"
 )
 
