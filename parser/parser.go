@@ -16,9 +16,9 @@ import (
 	"path/filepath"
 	"strings"
 
-	"golang.org/x/tools/go/exact"
-	_ "golang.org/x/tools/go/gcimporter"
-	"golang.org/x/tools/go/types"
+	"go/constant"
+	"go/importer"
+	"go/types"
 )
 
 // A Package contains all the information related to a parsed package.
@@ -59,7 +59,7 @@ func ParsePackage(directory, skipPrefix, skipSuffix string) (*Package, error) {
 
 	// type-check the package
 	defs := make(map[*ast.Ident]types.Object)
-	config := types.Config{FakeImportC: true}
+	config := types.Config{FakeImportC: true, Importer: importer.Default()}
 	info := &types.Info{Defs: defs}
 	if _, err := config.Check(directory, fs, files, info); err != nil {
 		return nil, fmt.Errorf("type-checking package: %v", err)
@@ -150,7 +150,7 @@ func (pkg *Package) valuesOfTypeIn(typeName string, decl *ast.GenDecl) ([]string
 				return nil, fmt.Errorf("can't handle non-integer constant type %s", typ)
 			}
 			value := obj.(*types.Const).Val() // Guaranteed to succeed as this is CONST.
-			if value.Kind() != exact.Int {
+			if value.Kind() != constant.Int {
 				log.Fatalf("can't happen: constant is not an integer %s", name)
 			}
 			values = append(values, name.Name)
