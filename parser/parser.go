@@ -10,15 +10,14 @@ import (
 	"fmt"
 	"go/ast"
 	"go/build"
-	"go/parser"
+	"go/constant"
 	"go/token"
+	"go/types"
 	"log"
 	"path/filepath"
 	"strings"
 
-	"go/constant"
-	"go/importer"
-	"go/types"
+	"golang.org/x/tools/go/loader"
 )
 
 // A Package contains all the information related to a parsed package.
@@ -30,45 +29,25 @@ type Package struct {
 }
 
 // ParsePackage parses the package in the given directory and returns it.
-func ParsePackage(directory, skipPrefix, skipSuffix string) (*Package, error) {
-	pkgDir, err := build.Default.ImportDir(directory, 0)
+func ParsePackage(directory string) (*Package, error) {
+	relDir, err := filepath.Rel(filepath.Join(build.Default.GOPATH, "src"), directory)
 	if err != nil {
-		return nil, fmt.Errorf("cannot process directory %s: %s", directory, err)
+		return nil, fmt.Errorf("provided directory not under GOPATH (%s): %v",
+			build.Default.GOPATH, err)
 	}
 
-	var files []*ast.File
-	fs := token.NewFileSet()
-	for _, name := range pkgDir.GoFiles {
-		if !strings.HasSuffix(name, ".go") ||
-			(skipSuffix != "" && strings.HasPrefix(name, skipPrefix) &&
-				strings.HasSuffix(name, skipSuffix)) {
-			continue
-		}
-		if directory != "." {
-			name = filepath.Join(directory, name)
-		}
-		f, err := parser.ParseFile(fs, name, nil, 0)
-		if err != nil {
-			return nil, fmt.Errorf("parsing file %v: %v", name, err)
-		}
-		files = append(files, f)
-	}
-	if len(files) == 0 {
-		return nil, fmt.Errorf("%s: no buildable Go files", directory)
+	loaderConf := loader.Config{TypeChecker: types.Config{FakeImportC: true}}
+	loaderConf.Import(relDir)
+	program, err := loaderConf.Load()
+	if err != nil {
+		return nil, fmt.Errorf("Couldn't load package: %v", err)
 	}
 
-	// type-check the package
-	defs := make(map[*ast.Ident]types.Object)
-	config := types.Config{FakeImportC: true, Importer: importer.Default()}
-	info := &types.Info{Defs: defs}
-	if _, err := config.Check(directory, fs, files, info); err != nil {
-		return nil, fmt.Errorf("type-checking package: %v", err)
-	}
-
+	pkgInfo := program.Package(relDir)
 	return &Package{
-		Name:  files[0].Name.Name,
-		files: files,
-		defs:  defs,
+		Name:  pkgInfo.Pkg.Name(),
+		files: pkgInfo.Files,
+		defs:  pkgInfo.Defs,
 	}, nil
 }
 
