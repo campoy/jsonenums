@@ -75,7 +75,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/adfin/jsonenums/parser"
+	"github.com/campoy/jsonenums/parser"
 )
 
 var (
@@ -92,16 +92,16 @@ func main() {
 	types := strings.Split(*typeNames, ",")
 
 	// Only one directory at a time can be processed, and the default is ".".
-	in_dir := "."
+	inDir := "."
 	if args := flag.Args(); len(args) == 1 {
-		in_dir = args[0]
+		inDir = args[0]
 	} else if len(args) > 1 {
 		log.Fatalf("only one directory at a time")
 	}
-	dir, err := filepath.Abs(in_dir)
+	dir, err := filepath.Abs(inDir)
 	if err != nil {
 		log.Fatalf("Unable to determine absolute filepath for requested path %s: %v",
-			in_dir, err)
+			inDir, err)
 	}
 
 	pkg, err := parser.ParsePackage(dir)

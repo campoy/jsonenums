@@ -21,7 +21,7 @@ import (
 
 	"go/format"
 
-	"github.com/adfin/jsonenums/parser"
+	"github.com/campoy/jsonenums/parser"
 )
 
 func init() {
