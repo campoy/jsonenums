@@ -36,11 +36,11 @@ func ParsePackage(directory string) (*Package, error) {
 			build.Default.GOPATH, err)
 	}
 
-	loaderConf := loader.Config{TypeChecker: types.Config{FakeImportC: true}}
-	loaderConf.Import(relDir)
-	program, err := loaderConf.Load()
+	conf := loader.Config{TypeChecker: types.Config{FakeImportC: true}}
+	conf.Import(relDir)
+	program, err := conf.Load()
 	if err != nil {
-		return nil, fmt.Errorf("Couldn't load package: %v", err)
+		return nil, fmt.Errorf("couldn't load package: %v", err)
 	}
 
 	pkgInfo := program.Package(relDir)

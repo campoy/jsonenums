@@ -92,16 +92,16 @@ func main() {
 	types := strings.Split(*typeNames, ",")
 
 	// Only one directory at a time can be processed, and the default is ".".
-	inDir := "."
+	dir := "."
 	if args := flag.Args(); len(args) == 1 {
-		inDir = args[0]
+		dir = args[0]
 	} else if len(args) > 1 {
 		log.Fatalf("only one directory at a time")
 	}
-	dir, err := filepath.Abs(inDir)
+	dir, err := filepath.Abs(dir)
 	if err != nil {
-		log.Fatalf("Unable to determine absolute filepath for requested path %s: %v",
-			inDir, err)
+		log.Fatalf("unable to determine absolute filepath for requested path %s: %v",
+			dir, err)
 	}
 
 	pkg, err := parser.ParsePackage(dir)
