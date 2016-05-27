@@ -47,7 +47,7 @@ func generateHandler(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer os.RemoveAll(dir)
 
-	pkg, err := parser.ParsePackage(dir, "", "")
+	pkg, err := parser.ParsePackage(dir)
 	if err != nil {
 		return fmt.Errorf("parse package: %v", err)
 	}

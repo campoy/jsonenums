@@ -98,8 +98,13 @@ func main() {
 	} else if len(args) > 1 {
 		log.Fatalf("only one directory at a time")
 	}
+	dir, err := filepath.Abs(dir)
+	if err != nil {
+		log.Fatalf("unable to determine absolute filepath for requested path %s: %v",
+			dir, err)
+	}
 
-	pkg, err := parser.ParsePackage(dir, *outputPrefix, *outputSuffix+".go")
+	pkg, err := parser.ParsePackage(dir)
 	if err != nil {
 		log.Fatalf("parsing package: %v", err)
 	}
