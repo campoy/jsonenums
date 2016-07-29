@@ -75,7 +75,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/campoy/jsonenums/parser"
+	"github.com/BenjaminTrapani/jsonenums/parser"
 )
 
 var (
@@ -83,6 +83,11 @@ var (
 	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
 	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
 )
+
+type CammelSnakePair struct {
+	CammelRep string
+	SnakeRep  string
+}
 
 func main() {
 	flag.Parse()
@@ -112,11 +117,11 @@ func main() {
 	var analysis = struct {
 		Command        string
 		PackageName    string
-		TypesAndValues map[string][]string
+		TypesAndValues map[string][]CammelSnakePair
 	}{
 		Command:        strings.Join(os.Args[1:], " "),
 		PackageName:    pkg.Name,
-		TypesAndValues: make(map[string][]string),
+		TypesAndValues: make(map[string][]CammelSnakePair),
 	}
 
 	// Run generate for each type.
@@ -125,7 +130,14 @@ func main() {
 		if err != nil {
 			log.Fatalf("finding values for type %v: %v", typeName, err)
 		}
-		analysis.TypesAndValues[typeName] = values
+
+		cammelSnakePairs := make([]CammelSnakePair, len(values))
+		for i, value := range values {
+			cammelSnakePairs[i].CammelRep = value
+			cammelSnakePairs[i].SnakeRep = ToSnake(value)
+		}
+
+		analysis.TypesAndValues[typeName] = cammelSnakePairs
 
 		var buf bytes.Buffer
 		if err := generatedTmpl.Execute(&buf, analysis); err != nil {
