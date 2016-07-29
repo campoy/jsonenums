@@ -12,6 +12,14 @@ import (
 	"strings"
 )
 
+type TestCasing int
+
+const (
+	caseMadnessA TestCasing = iota
+	caseMaDnEEsB
+	normalCaseExample
+)
+
 //go:generate jsonenums -type=ShirtSize
 
 type ShirtSize byte
