@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+// modified by Odyssey
+
 // JSONenums is a tool to automate the creation of methods that satisfy the
 // fmt.Stringer, json.Marshaler and json.Unmarshaler interfaces.
 // Given the name of a (signed or unsigned) integer type T that has constants
@@ -78,10 +80,16 @@ import (
 	"github.com/campoy/jsonenums/parser"
 )
 
+type customMapping struct {
+	Raw    string
+	Custom string
+}
+
 var (
-	typeNames    = flag.String("type", "", "comma-separated list of type names; must be set")
-	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
-	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
+	typeNames           = flag.String("type", "", "comma-separated list of type names; must be set")
+	outputPrefix        = flag.String("prefix", "", "prefix to be added to the output file")
+	outputSuffix        = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
+	customValueMappings = flag.String("custom", "", "semicolon list of custom mappings for type values")
 )
 
 func main() {
@@ -104,6 +112,12 @@ func main() {
 			dir, err)
 	}
 
+	customValueNames := make(map[string]string)
+	for _, mapping := range strings.Split(*customValueMappings, ";") {
+		splitValues := strings.Split(mapping, ",")
+		customValueNames[splitValues[0]] = splitValues[1]
+	}
+
 	pkg, err := parser.ParsePackage(dir)
 	if err != nil {
 		log.Fatalf("parsing package: %v", err)
@@ -112,11 +126,11 @@ func main() {
 	var analysis = struct {
 		Command        string
 		PackageName    string
-		TypesAndValues map[string][]string
+		TypesAndValues map[string][]customMapping
 	}{
 		Command:        strings.Join(os.Args[1:], " "),
 		PackageName:    pkg.Name,
-		TypesAndValues: make(map[string][]string),
+		TypesAndValues: make(map[string][]customMapping),
 	}
 
 	// Run generate for each type.
@@ -125,7 +139,23 @@ func main() {
 		if err != nil {
 			log.Fatalf("finding values for type %v: %v", typeName, err)
 		}
-		analysis.TypesAndValues[typeName] = values
+
+		var newValues []customMapping
+		for _, oldValue := range values {
+			val, ok := customValueNames[oldValue]
+			if ok {
+				newValues = append(newValues, customMapping{
+					Raw:    oldValue,
+					Custom: val,
+				})
+			} else {
+				newValues = append(newValues, customMapping{
+					Raw:    oldValue,
+					Custom: oldValue,
+				})
+			}
+		}
+		analysis.TypesAndValues[typeName] = newValues
 
 		var buf bytes.Buffer
 		if err := generatedTmpl.Execute(&buf, analysis); err != nil {
