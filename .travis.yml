@@ -6,3 +6,4 @@ go:
   - master
 script:
   - go test ./...
+
