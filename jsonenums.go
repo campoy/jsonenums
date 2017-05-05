@@ -91,6 +91,9 @@ var (
 	typeNames    = flag.String("type", "", "comma-separated list of type names; must be set")
 	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
 	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
+
+	// BSON Support
+	bsonMode = flag.Bool("bson", false, "enable BSON-mode and generate BSON output in addition to JSON")
 )
 
 func main() {
@@ -118,14 +121,26 @@ func main() {
 		log.Fatalf("parsing package: %v", err)
 	}
 
+	funcPrefixes := []string{"JSON"}
+	imports := []string{"encoding/json"}
+	if *bsonMode {
+		funcPrefixes = append(funcPrefixes, "BSON")
+		imports = append(imports, "gopkg.in/mgo.v2/bson")
+	}
 	var analysis = struct {
 		Command        string
 		PackageName    string
 		TypesAndValues map[string][]string
+
+		// ["JSON", "BSON"]
+		FuncPrefixes []string
+		Imports      []string
 	}{
 		Command:        strings.Join(os.Args[1:], " "),
 		PackageName:    pkg.Name,
 		TypesAndValues: make(map[string][]string),
+		FuncPrefixes:   funcPrefixes,
+		Imports:        imports,
 	}
 
 	// Run generate for each type.
