@@ -31,12 +31,12 @@ import (
 
 var (
     _{{$typename}}NameToValue = map[string]{{$typename}} {
-        {{range $values}}"{{.}}": {{.}},
+        {{range $values}}"{{.Custom}}": {{.Raw}},
         {{end}}
     }
 
     _{{$typename}}ValueToName = map[{{$typename}}]string {
-        {{range $values}}{{.}}: "{{.}}",
+        {{range $values}}{{.Raw}}: "{{.Custom}}",
         {{end}}
     }
 )
@@ -45,7 +45,7 @@ func init() {
     var v {{$typename}}
     if _, ok := interface{}(v).(fmt.Stringer); ok {
         _{{$typename}}NameToValue = map[string]{{$typename}} {
-            {{range $values}}interface{}({{.}}).(fmt.Stringer).String(): {{.}},
+            {{range $values}}interface{}({{.Raw}}).(fmt.Stringer).String(): {{.Raw}},
             {{end}}
         }
     }
