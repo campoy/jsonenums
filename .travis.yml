@@ -5,5 +5,4 @@ go:
   - 1.8
   - master
 script:
-  - go test ./...
-
+  - GOPATH="$GOPATH:/tmp/jsonenums-test/go1:/tmp/jsonenums-test/go2" go test ./...
