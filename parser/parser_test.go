@@ -42,7 +42,7 @@ func TestParseFromMultipleGopath(t *testing.T) {
 	}
 	gopath := gopaths[len(gopaths)-1]
 	dir := filepath.Join(gopath, "src", "foo")
-	defer must(t, os.RemoveAll(dir))
+	defer func() { must(t, os.RemoveAll(dir)) }()
 	must(t, os.MkdirAll(dir, 0755))
 	must(t, ioutil.WriteFile(filepath.Join(dir, "main.go"), []byte(fakeCode), 0644))
 
