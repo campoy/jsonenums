@@ -91,7 +91,8 @@ var (
 	typeNames    = flag.String("type", "", "comma-separated list of type names; must be set")
 	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
 	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
-	outputFile   = flag.String("file", "", "Specify the exact filename to output with.  Will ignore output prefix/suffix values.")
+	outputFile   = flag.String("file", "", "Specify the exact filename to output with.  "+
+		"Will ignore output prefix/suffix values.  This option should be used if multiple types are set")
 )
 
 func main() {
