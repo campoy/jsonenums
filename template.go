@@ -35,6 +35,7 @@ import (
 
 {{ $upper := .Upper}}
 {{ $lower := .Lower}}
+{{ $noStringer := .NoStringer }}
 {{range $typename, $values := .TypesAndValues}}
 
 var (
@@ -49,6 +50,7 @@ var (
     }
 )
 
+{{ if not $noStringer }}
 func init() {
     var v {{$typename}}
     if _, ok := interface{}(v).(fmt.Stringer); ok {
@@ -58,6 +60,7 @@ func init() {
         }
     }
 }
+{{ end }}
 
 // MarshalJSON is generated so {{$typename}} satisfies json.Marshaler.
 func (r {{$typename}}) MarshalJSON() ([]byte, error) {
