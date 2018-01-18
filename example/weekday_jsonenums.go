@@ -44,6 +44,7 @@ func init() {
 	}
 }
 
+// MarshalJSON is generated so WeekDay satisfies json.Marshaler.
 func (r WeekDay) MarshalJSON() ([]byte, error) {
 	if s, ok := interface{}(r).(fmt.Stringer); ok {
 		return json.Marshal(s.String())
@@ -55,7 +56,11 @@ func (r WeekDay) MarshalJSON() ([]byte, error) {
 	return json.Marshal(s)
 }
 
+// UnmarshalJSON is generated so WeekDay satisfies json.Unmarshaler.
 func (r *WeekDay) UnmarshalJSON(data []byte) error {
+	if string(data) == "null" {
+		return nil
+	}
 	var s string
 	if err := json.Unmarshal(data, &s); err != nil {
 		return fmt.Errorf("WeekDay should be a string, got %s", data)
