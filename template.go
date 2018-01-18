@@ -65,6 +65,9 @@ func (r {{$typename}}) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON is generated so {{$typename}} satisfies json.Unmarshaler.
 func (r *{{$typename}}) UnmarshalJSON(data []byte) error {
+    if string(data) == "null" {
+        return nil
+    }
     var s string
     if err := json.Unmarshal(data, &s); err != nil {
         return fmt.Errorf("{{$typename}} should be a string, got %s", data)
