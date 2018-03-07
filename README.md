@@ -72,6 +72,7 @@ The `-type` flag accepts a comma-separated list of types so a single run can
 generate methods for multiple types. The default output file is t_jsonenums.go,
 where t is the lower-cased name of the first type listed. The suffix can be
 overridden with the `-suffix` flag and a prefix may be added with the `-prefix` 
-flag.
+flag. The `-lower` flag sets the values of the enums in lower case while the `-upper`
+sets it in upper case.
 
 This is not an official Google product (experimental or otherwise), it is just code that happens to be owned by Google.

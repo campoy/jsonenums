@@ -88,9 +88,12 @@ import (
 )
 
 var (
-	typeNames    = flag.String("type", "", "comma-separated list of type names; must be set")
-	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
-	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
+	typeNames        = flag.String("type", "", "comma-separated list of type names; must be set")
+	outputLower      = flag.Bool("lower", false, "set the json enum values to lower case")
+	outputUpper      = flag.Bool("upper", false, "set the json enum values to upper case")
+	outputNoStringer = flag.Bool("no-stringer", false, "disable the usage of stringer if exists")
+	outputPrefix     = flag.String("prefix", "", "prefix to be added to the output file")
+	outputSuffix     = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
 )
 
 func main() {
@@ -99,6 +102,10 @@ func main() {
 		log.Fatalf("the flag -type must be set")
 	}
 	types := strings.Split(*typeNames, ",")
+
+	if *outputLower && *outputUpper {
+		log.Fatal("cannot -upper and -lower in the same time")
+	}
 
 	// Only one directory at a time can be processed, and the default is ".".
 	dir := "."
@@ -122,10 +129,16 @@ func main() {
 		Command        string
 		PackageName    string
 		TypesAndValues map[string][]string
+		Lower          bool
+		Upper          bool
+		NoStringer     bool
 	}{
 		Command:        strings.Join(os.Args[1:], " "),
 		PackageName:    pkg.Name,
 		TypesAndValues: make(map[string][]string),
+		Lower:          *outputLower,
+		Upper:          *outputUpper,
+		NoStringer:     *outputNoStringer,
 	}
 
 	// Run generate for each type.
