@@ -64,10 +64,11 @@ func init() {
 
 // MarshalJSON is generated so {{$typename}} satisfies json.Marshaler.
 func (r {{$typename}}) MarshalJSON() ([]byte, error) {
+    {{ if not $noStringer -}}
     if s, ok := interface{}(r).(fmt.Stringer); ok {
         return json.Marshal(s.String())
     }
-    s, ok := _{{$typename}}ValueToName[r]
+    {{ end }}s, ok := _{{$typename}}ValueToName[r]
     if !ok {
         return nil, fmt.Errorf("invalid {{$typename}}: %d", r)
     }
