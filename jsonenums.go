@@ -91,6 +91,8 @@ var (
 	typeNames    = flag.String("type", "", "comma-separated list of type names; must be set")
 	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
 	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
+	outputFile   = flag.String("file", "", "Specify the exact filename to output with.  "+
+		"Will ignore output prefix/suffix values.  This option should be used if multiple types are set")
 )
 
 func main() {
@@ -152,6 +154,10 @@ func main() {
 
 		output := strings.ToLower(*outputPrefix + typeName +
 			*outputSuffix + ".go")
+		if *outputFile != "" {
+			// This will make sure that .go is at the end whether or not a user specifies it
+			output = strings.TrimSuffix(*outputFile, ".go") + ".go"
+		}
 		outputPath := filepath.Join(dir, output)
 		if err := ioutil.WriteFile(outputPath, src, 0644); err != nil {
 			log.Fatalf("writing output: %s", err)
