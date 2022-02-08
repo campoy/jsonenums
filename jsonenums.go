@@ -91,7 +91,13 @@ var (
 	typeNames    = flag.String("type", "", "comma-separated list of type names; must be set")
 	outputPrefix = flag.String("prefix", "", "prefix to be added to the output file")
 	outputSuffix = flag.String("suffix", "_jsonenums", "suffix to be added to the output file")
+	trimPrefix   = flag.String("trimprefix", "", "trim the prefix from the generated constant names")
 )
+
+type ValuePair struct {
+	ValueName string
+	ValueKind string
+}
 
 func main() {
 	flag.Parse()
@@ -121,11 +127,11 @@ func main() {
 	var analysis = struct {
 		Command        string
 		PackageName    string
-		TypesAndValues map[string][]string
+		TypesAndValues map[string][]ValuePair
 	}{
 		Command:        strings.Join(os.Args[1:], " "),
 		PackageName:    pkg.Name,
-		TypesAndValues: make(map[string][]string),
+		TypesAndValues: make(map[string][]ValuePair),
 	}
 
 	// Run generate for each type.
@@ -134,7 +140,12 @@ func main() {
 		if err != nil {
 			log.Fatalf("finding values for type %v: %v", typeName, err)
 		}
-		analysis.TypesAndValues[typeName] = values
+		pairs := make([]ValuePair, len(values))
+		for i := 0; i < len(values); i++ {
+			pairs[i].ValueName = strings.TrimPrefix(values[i], *trimPrefix)
+			pairs[i].ValueKind = values[i]
+		}
+		analysis.TypesAndValues[typeName] = pairs
 
 		var buf bytes.Buffer
 		if err := generatedTmpl.Execute(&buf, analysis); err != nil {
